@@ -1,0 +1,132 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css" />
+<script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="../../socket.io/socket.io.js"></script>
+<script type="text/javascript" src="../../lib/js/jquery-ui-1.10.3.full.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="../../css/adapter.css" />
+<script type="text/javascript" src="../../js/translate.js"></script>
+<script type="text/javascript" src="../../js/adapter-settings.js"></script>
+
+<style>
+    .invalid {
+        border: 3px solid red;
+    }
+</style>
+
+<script type="text/javascript">
+    systemDictionary = {
+        "Connection link":          {"en": "Connection link",       "de": "Verbindungslink",        "ru": "URL соединения"},
+        "Own address":              {"en": "Own address",           "de": "Eigene Adresse",         "ru": "Собственный адрес"},
+        "Own port":                 {"en": "Own port",              "de": "Eigener Port",           "ru": "Собственный порт"},
+        "Reconnect timeout":        {"en": "Reconnect timeout",     "de": "Timeout-wiederaufbau",   "ru": "Таймаут между попытками соединения"},
+        "Ping timeout":             {"en": "Keep alive timeout",    "de": "Timeout-KeepAlive",      "ru": "Таймаут KeepAlive"},
+        "Force objects re-init":    {
+            "en": "Synchronize objects (once)",
+            "de": "Synchronisiere Geräte neu (einmalig)",
+            "ru": "Синхронизировать объекты (один раз)"
+        },
+        "Subscribe list":           {"en": "Subscribe list",        "de": "Subscribe list",      "ru": "Subscribe list"}
+    };
+
+    var onChange = null;
+
+    function setValue(id, value) {
+        // example: select elements with id=key and class=value and insert value
+        if ($('#' + id + '.value').attr('type') == 'checkbox') {
+            $('#' + id + '.value').prop('checked', value).change(function() {
+                onChange();
+            });
+        } else {
+            $('#' + id + '.value').val(value).change(function() {
+                onChange();
+            }).keyup(function() {
+                // Check that only numbers entered
+                $(this).trigger('change');
+            });
+        }
+    }
+
+    function load(settings, _onChange) {
+        onChange = _onChange;
+        fillSelectIPs('#bind', settings.bind, false, true);
+
+        if (settings.subList) {
+            var vars = settings.subList.split(/[\r\n|\r|\n\,]/);
+            for (var v = 0; v < vars.length; v++) {
+                vars[v] = vars[v].trim();
+            }
+            settings.subList = vars.join('\n');
+        }
+
+        for (var key in settings) {
+            setValue(key, settings[key]);
+        }
+
+        onChange(false);
+    }
+
+    function getSettings() {
+        var obj = {};
+        $('.value').each(function () {
+            var $this = $(this);
+            var id = $this.attr('id');
+
+            if ($this.attr('type') == 'checkbox') {
+                obj[$this.attr('id')] = $this.prop('checked');
+            } else {
+                obj[$this.attr('id')] = $this.val();
+            }
+        });
+
+        if (obj.subList) {
+            var vars = obj.subList.split(/[\r\n|\r|\n\,]/);
+            for (var v = 0; v < vars.length; v++) {
+                vars[v] = vars[v].trim();
+            }
+            obj.subList = vars.join('\n');
+        }
+        return obj;
+    }
+
+    function save(callback) {
+        callback(getSettings());
+    }
+
+</script>
+</head>
+<body>
+<div id="adapter-container">
+    <table><tr><td><img src="graphpic.png" width="64" height="64"></td><td><h3 class="translate">GrpahPic adapter settings</h3></td></tr></table>
+
+    <table style="width: 100%; height: calc(100% - 70px);">
+        <tr>
+            <td class="translate">Connection link</td>
+                <td><input type="text" id="connectionLink" class="value" /></td>
+        </tr>
+        <tr>
+            <td class="translate">Own address</td>
+            <td><select id="bind" class="value"></select></td>
+        </tr>
+        <tr>
+            <td class="translate">Own port</td>
+                <td><input type="number" id="port" class="value" /></td>
+        </tr>
+        <tr>
+            <td class="translate">Reconnect timeout</td>
+            <td><input type="number" id="reconnectTimeout" class="value" /></td>
+        </tr>
+        <tr>
+            <td class="translate">Ping timeout</td>
+            <td><input type="number" id="pingTimeout" class="value" /></td>
+        </tr>
+        <tr style="height: 100%;">
+            <td class="translate">Subscribe list</td>
+            <td><textarea type="string" id="subList" multiple class="value" style="margin: 0px;width: 100%;height: 100%;"></textarea></td>
+        </tr>
+    </table>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{
+    "common": {
+        "name":                     "graphpic",
+        "title":                    "GraphPic",
+        "desc":                     {
+            "en": "Connects Gefasoft GraphPic and ioBroker",
+            "de": "Verbindet Gefasoft GraphPic mit ioBroker",
+            "ru": "Подключает Gefasoft GraphPic к ioBroker"
+        },
+        "version":                  "0.0.1",
+        "authors": [
+            "bluefox <dogafox@gmail.com>"
+        ],
+        "license":                  "MIT",
+        "mode":                     "daemon",
+        "messagebox":               true,
+        "subscribe":                "messagebox",
+        "subscribable":             true,
+        "platform":                 "Javascript/Node.js",
+        "loglevel":                 "info",
+        "readme":                   "https://github.com/ioBroker/ioBroker.graphpic/blob/master/README.md",
+        "icon":                     "graphpic.png",
+        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.graphpic/master/admin/graphpic.png",
+        "keywords":                 ["graphpic"],
+        "type":                     "visualisation"
+    },
+    "native": {
+        "forceReInit":              false,
+        "connectionLink":           "http://localhost:8000",
+        "bind":                     "127.0.0.1",
+        "port":                     8001,
+        "reconnectTimeout":         30000,
+        "pingTimeout":              30000,
+        "subList":                  ""
+    },
+    "objects": [
+    ],
+    "instanceObjects": [
+        {
+            "_id":  "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.connection",
+            "type": "state",
+            "common": {
+                "role":  "indicator.connected",
+                "name":  "If connected to GraphPic",
+                "type":  "boolean",
+                "read":  true,
+                "write": false,
+                "def":   false
+            },
+            "native": {}
+        }
+    ]
+}
