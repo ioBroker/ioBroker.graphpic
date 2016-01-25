@@ -122,6 +122,8 @@ function gpSubscribe(id, callback) {
     var parts = id.split('.');
     var group = parts.shift();
 
+    // TODO support of wildchars: graphpic.0.* (All), graphpic.0.A* (All groups starting with A), graphpic.0.groupName.* (all elements of groupName)
+
     adapter.log.debug('gpSubscribe: ' + id);
     adapter.log.debug(adapter.config.connectionLink + '/api/subscribe/' + group + '/' + parts.join('.') + '/' + initString);
 
