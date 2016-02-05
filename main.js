@@ -6,12 +6,14 @@ var adapter = utils.adapter('graphpic');
 var request = require('request');
 var express = require('express');
 
-var app         = express(); // express server
-var server      = null;      // http server
-var pingTimeout = null;      // timer to monitor pings
-var oldObjects  = null;      // array with old objects to synchronise
-var objects     = {};        // object with actual objects
-var subscribes  = [];
+var app           = express(); // express server
+var server        = null;      // http server
+var pingTimeout   = null;      // timer to monitor pings
+var pingLastCheck = null;      // When last ping was received
+var oldObjects    = null;      // array with old objects to synchronise
+var objects       = {};        // object with actual objects
+var subscribes    = [];
+var inited        = false;     // if init string sent to graphpic
 var cutLength;
 var initString;
 
@@ -37,8 +39,7 @@ adapter.on('ready', function () {
         }
     }).on('message', function (obj) {
         processMessage(obj);
-    }
-);
+    });
 
 process.on('SIGINT', function () {
     if (adapter && adapter.setState) {
@@ -47,6 +48,7 @@ process.on('SIGINT', function () {
             server.close();
         }
         adapter.setState('info.connection', false, true);
+        inited = false;
     }
 });
 
@@ -72,6 +74,19 @@ function processMessage(msg) {
             });
         }
     }
+}
+
+function resubscribeAll(index, callback) {
+    index = index || 0;
+    if (index >= subscribes.length) {
+        callback && callback();
+        return;
+    }
+    gpSubscribe(subscribes[index], function () {
+        setTimeout(function () {
+            resubscribeAll(index + 1, callback);
+        }, 0)
+    }, true);
 }
 
 // Functions to communicate with graphPic
@@ -109,12 +124,27 @@ function gpRequestGroups(callback) {
     });
 }
 
-function gpSubscribe(id, callback) {
+function gpSubscribe(id, callback, force) {
+    if (typeof callback === 'boolean') {
+        force    = callback;
+        callback = null;
+    }
+
     if (subscribes.indexOf(id) != -1)  {
-        callback && callback(null);
+        if (!force) {
+            callback && callback(null);
+            return;
+        }
+    } else {
+        subscribes.push(id);
+    }
+
+    if (!inited) {
+        adapter.log.info('Subscribe is too early, will be sent after inited: ' + id);
+        callback && callback();
         return;
     }
-    subscribes.push(id);
+
     if (id.substring(0, adapter.namespace.length) == adapter.namespace) {
         id = id.substring(adapter.namespace.length + 1);
     }
@@ -125,13 +155,13 @@ function gpSubscribe(id, callback) {
     // TODO support of wildchars: graphpic.0.* (All), graphpic.0.A* (All groups starting with A), graphpic.0.groupName.* (all elements of groupName)
 
     adapter.log.debug('gpSubscribe: ' + id);
-    adapter.log.debug(adapter.config.connectionLink + '/api/subscribe/' + group + '/' + parts.join('.') + '/' + initString);
+    adapter.log.info(adapter.config.connectionLink + '/api/subscribe/' + group + '/' + parts.join('.') + '/' + initString);
 
     request(adapter.config.connectionLink + '/api/subscribe/' + group + '/' + parts.join('.') + '/' + initString, function (error, response, body) {
-        if (!error && response.statusCode == 200 && body == 'ok') {
+        if (!error && response.statusCode == 200 && body == '"ok"') {
             callback && callback();
         } else {
-            adapter.log.error('gpSubscribe: ' + error);
+            adapter.log.error('gpSubscribe: ' + (error || body));
             callback && callback(error || response.statusCode);
         }
     });
@@ -150,8 +180,10 @@ function gpUnsubscribe(id, callback) {
     var parts = id.split('.');
     var group = parts.shift();
 
+    adapter.log.info(adapter.config.connectionLink + '/api/unsubscribe/' + group + '/' + parts.join('.') + '/' + initString);
+
     request(adapter.config.connectionLink + '/api/unsubscribe/' + group + '/' + parts.join('.') + '/' + initString, function (error, response, body) {
-        if (!error && response.statusCode == 200 && body == 'ok') {
+        if (!error && response.statusCode == 200 && body == '"ok"') {
             callback && callback(error);
         } else {
             adapter.log.error('gpUnsubscribe: ' + error);
@@ -178,7 +210,7 @@ function gpRequestVariables(group, callback) {
 }
 
 function gpSendInit(callback) {
-    adapter.log.info('Send init "' + 'http://' + adapter.config.bind + ':' + adapter.config.port + '/"');
+    adapter.log.info('Send init "' + 'http://' + adapter.config.bind + ':' + adapter.config.port + '/api/init/' + initString + '"');
     request(adapter.config.connectionLink + '/api/init/' + initString,
         function (error, response, body) {
             if (error) {
@@ -190,6 +222,7 @@ function gpSendInit(callback) {
             if (callback) callback(error || (response ? response.statusCode : 'error'));
         });
 }
+
 // ------------------ Synchronise variables in ioBroker
 function addToEnum(enumName, id, callback) {
     adapter.getForeignObject(enumName, function (err, obj) {
@@ -283,6 +316,9 @@ function startWebServer() {
         var id = req.params.groupId + '.' + req.params.varId;
         adapter.log.debug('update [' + id + ']: ' + req.params.value);
 
+        // accept info as ping
+        checkPing();
+
         // If variable exists
         if (objects[id]) {
             var val = req.params.value;
@@ -305,12 +341,15 @@ function startWebServer() {
                 }
             }
         } else {
-            adapter.log.warn('Unknown ID: ' + id);
-            gpSendInit();
+            if (inited) {
+                adapter.log.warn('Unknown ID: ' + id);
+                gpSendInit();
+            }
         }
 
         res.send('OK');
     });
+
     app.get('/ping', function (req, res) {
         adapter.log.debug('ping');
         checkPing();
@@ -321,6 +360,13 @@ function startWebServer() {
 }
 
 function checkPing(isStop) {
+    // do not reset ping ofter than 1 seconds
+    if (!isStop && pingLastCheck && new Date().getTime() - pingLastCheck < 1000) {
+        return;
+    }
+
+    pingLastCheck = new Date().getTime();
+
     if (pingTimeout) {
         clearTimeout(pingTimeout);
     }
@@ -331,6 +377,7 @@ function checkPing(isStop) {
             adapter.log.warn('No ping in ' + adapter.config.pingTimeout + 'ms. Reconnect...');
             // no ping in given time => mark as disconnected, try to sync
             adapter.setState('info.connection', false, true);
+            inited = false;
             syncAll();
         }, adapter.config.pingTimeout);
     }
@@ -400,6 +447,7 @@ function syncGroup(groups, g, callback) {
         }
     });
 }
+
 function syncGroups(callback) {
     gpRequestGroups(function (err, groups) {
         if (err || !groups || !groups.length) {
@@ -433,6 +481,7 @@ function syncAll() {
     syncGroups(function (err) {
         if (!err) {
             adapter.setState('info.connection', true, true);
+
             if (oldObjects) syncIoBrokerObjects();
 
             // Subscribe all variables
@@ -443,6 +492,13 @@ function syncAll() {
                 gpSubscribe(vars[v]);
             }
 
+            if (!inited) {
+                inited = new Date().getTime();
+                // resubscribe all states
+                setTimeout(function () {
+                    resubscribeAll();
+                }, 100);
+            }
             // start ping monitoring
             checkPing();
         } else {
