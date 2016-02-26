@@ -7,7 +7,7 @@
             "de": "Verbindet Gefasoft GraphPic mit ioBroker",
             "ru": "Подключает Gefasoft GraphPic к ioBroker"
         },
-        "version":                  "0.0.2",
+        "version":                  "0.0.3",
         "authors": [
             "bluefox <dogafox@gmail.com>"
         ],

@@ -497,7 +497,7 @@ function syncAll() {
                 // resubscribe all states
                 setTimeout(function () {
                     resubscribeAll();
-                }, 100);
+                }, 1000);
             }
             // start ping monitoring
             checkPing();

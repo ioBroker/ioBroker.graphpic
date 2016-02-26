@@ -20,6 +20,9 @@ iobroker add graphpic
 
 ## Changelog
 
+### 0.0.3  (2016-02-26)
+* (bluefox) delay subscribe on restart
+
 ### 0.0.2  (2016-02-05)
 * (bluefox) Fix subscribe on connection change, on restart
 
