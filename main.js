@@ -312,9 +312,9 @@ function syncIoBrokerObjects() {
 
 // ---------------------- Web server --------------------
 function startWebServer() {
-    app.get('/update/:groupId/:varId/:value', function (req, res) {
+    app.get('/update/:groupId/:varId/:quality/:value', function (req, res) {
         var id = req.params.groupId + '.' + req.params.varId;
-        adapter.log.debug('update [' + id + ']: ' + req.params.value);
+        adapter.log.debug('update [' + id + ']: ' + req.params.value + 'Q: ' + req.params.quality);
 
         // accept info as ping
         checkPing();
@@ -322,22 +322,23 @@ function startWebServer() {
         // If variable exists
         if (objects[id]) {
             var val = req.params.value;
+			var quality = req.params.quality;
             if (val === '__bad__') {
                 adapter.setState(id, { q: 0x84, ack: true });
             } else {
                 if (objects[id].native.type == 'int') {
-                    adapter.setState(id, { val: parseInt(val, 10), ack: true, q: 0x00 });
+                    adapter.setState(id, { val: parseInt(val, 10), ack: true, q: parseInt(quality, 10)});
                 } else if (objects[id].native.type == 'float') {
-                    adapter.setState(id, { val: parseFloat(val), ack: true, q: 0x00 });
+                    adapter.setState(id, { val: parseFloat(val), ack: true, q: parseInt(quality, 10)});
                 } else if (objects[id].native.type == 'string') {
-                    adapter.setState(id, { val: val.toString(), ack: true, q: 0x00 });
+                    adapter.setState(id, { val: val.toString(), ack: true, q: parseInt(quality, 10)});
                 } else if (objects[id].native.type == 'bool') {
                     if (val === 'true') val = true;
                     if (val === 'false') val = false;
-                    adapter.setState(id, { val: val, ack: true, q: 0x00 });
+                    adapter.setState(id, { val: val, ack: true, q: parseInt(quality, 10)});
                 } else if (objects[id].native.type == 'block') {
                     // todo check json
-                    adapter.setState(id, { val: val, ack: true, q: 0x00 });
+                    adapter.setState(id, { val: val, ack: true, q: parseInt(quality, 10)});
                 }
             }
         } else {
@@ -497,7 +498,7 @@ function syncAll() {
                 // resubscribe all states
                 setTimeout(function () {
                     resubscribeAll();
-                }, 1000);
+                }, 100);
             }
             // start ping monitoring
             checkPing();
