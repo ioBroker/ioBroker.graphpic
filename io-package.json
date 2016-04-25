@@ -31,7 +31,8 @@
         "port":                     8001,
         "reconnectTimeout":         30000,
         "pingTimeout":              30000,
-        "subList":                  ""
+        "subList":                  "",
+		"tcpPort":                  4001
     },
     "objects": [
     ],

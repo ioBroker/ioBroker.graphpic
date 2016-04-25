@@ -19,7 +19,8 @@
     systemDictionary = {
         "Connection link":          {"en": "Connection link",       "de": "Verbindungslink",        "ru": "URL соединения"},
         "Own address":              {"en": "Own address",           "de": "Eigene Adresse",         "ru": "Собственный адрес"},
-        "Own port":                 {"en": "Own port",              "de": "Eigener Port",           "ru": "Собственный порт"},
+        "Own RESTful port":         {"en": "Own RESTful port",      "de": "Eigener RESTful Port",   "ru": "Собственный RESTful порт"},
+        "Own TCP port":         	{"en": "Own TCP port",      	"de": "Eigener TCP Port",   	"ru": "Собственный TCP порт"},
         "Reconnect timeout":        {"en": "Reconnect timeout",     "de": "Timeout-wiederaufbau",   "ru": "Таймаут между попытками соединения"},
         "Ping timeout":             {"en": "Keep alive timeout",    "de": "Timeout-KeepAlive",      "ru": "Таймаут KeepAlive"},
         "Force objects re-init":    {
@@ -110,10 +111,13 @@
             <td><select id="bind" class="value"></select></td>
         </tr>
         <tr>
-            <td class="translate">Own port</td>
+            <td class="translate">Own RESTful port</td>
                 <td><input type="number" id="port" class="value" /></td>
         </tr>
         <tr>
+            <td class="translate">Own TCP port</td>
+                <td><input type="number" id="tcpPort" class="value" /></td>
+        </tr>        <tr>
             <td class="translate">Reconnect timeout</td>
             <td><input type="number" id="reconnectTimeout" class="value" /></td>
         </tr>

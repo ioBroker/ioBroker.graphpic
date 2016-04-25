@@ -16,6 +16,8 @@ var subscribes    = [];
 var inited        = false;     // if init string sent to graphpic
 var cutLength;
 var initString;
+var gpServerPort  = null;		 
+var gpServer      = 'localhost';
 
 adapter.on('ready', function () {
         main();
@@ -91,7 +93,7 @@ function resubscribeAll(index, callback) {
 
 // Functions to communicate with graphPic
 function gpWriteVar(id, state, callback) {
-    var options = {
+ /*   var options = {
         method: 'post',
         body: state.val.toString(),
         url: adapter.config.connectionLink + '/api/set/' + objects[id].native.group + '/' + objects[id].native.item
@@ -105,6 +107,9 @@ function gpWriteVar(id, state, callback) {
             callback && callback();
         }
     });
+	*/
+	//tcp
+	gpSetVar(id, state, callback);
 }
 
 function gpRequestGroups(callback) {
@@ -218,7 +223,11 @@ function gpSendInit(callback) {
             } else {
                 adapter.log.info('Init response OK - ' + response.statusCode + ', body: ' + body);
             }
-            if (!error && response && response.statusCode == 200) response.statusCode = null;
+            if (!error && response && response.statusCode == 200){
+				response.statusCode = null;			
+				gpServerPort = Number(JSON.parse(body));
+				adapter.log.info('GP Server Port set to ' + gpServerPort);
+			} 
             if (callback) callback(error || (response ? response.statusCode : 'error'));
         });
 }
@@ -511,16 +520,117 @@ function syncAll() {
     });
 }
 
+function startTcpServer(){
+	var s = require('net').Server(function (socket) {
+
+
+		socket.on('data', function (msg) {
+			
+			var message = msg.toString();
+			console.log(message);
+			
+			var parts = message.split('/');
+			var groupId = parts[0];
+			var varId = parts[1];
+			var value = parts[2];
+			var quality = '__good__';
+			var id = groupId + '.' + varId;
+			adapter.log.debug('update [' + id + ']: ' + value + 'Q: ' + quality);
+			// accept info as ping
+			checkPing();
+
+			// If variable exists
+			if (objects[id]) {
+				var val = value;
+				if (val === '__bad__') {
+					adapter.setState(id, { q: 0x84, ack: true });
+				} else {
+					if (objects[id].native.type == 'int') {
+						adapter.setState(id, { val: parseInt(val, 10), ack: true, q: parseInt(quality, 10)});
+					} else if (objects[id].native.type == 'float') {
+						adapter.setState(id, { val: parseFloat(val), ack: true, q: parseInt(quality, 10)});
+					} else if (objects[id].native.type == 'string') {
+						adapter.setState(id, { val: val.toString(), ack: true, q: parseInt(quality, 10)});
+					} else if (objects[id].native.type == 'bool') {
+						if (val === 'true') val = true;
+						if (val === 'false') val = false;
+						adapter.setState(id, { val: val, ack: true, q: parseInt(quality, 10)});
+					} else if (objects[id].native.type == 'block') {
+						// todo check json
+						adapter.setState(id, { val: val, ack: true, q: parseInt(quality, 10)});
+					}
+				}
+			} else {
+				if (inited) {
+					adapter.log.warn('Unknown ID: ' + id);
+					gpSendInit();
+				}
+			}
+					
+			socket.write('ok');
+		});
+
+		socket.on('end', function () {
+			socket.end();	
+		});
+
+		socket.on('close', function () {
+			socket.end();		
+		});
+
+		
+		socket.on('error', function () {
+			socket.end();		
+		});
+	});
+
+	s.listen(adapter.config.tcpPort);
+	adapter.log.warn('TCP Server listening to http://localhost:' + adapter.config.tcpPort);
+}
+
+function gpSetVar(id, state, callback) {
+
+	if (!gpServerPort){
+		adapter.log.error('gpServerPort is null');
+	}
+
+	var message = objects[id].native.group + '/' + objects[id].native.item + '/' + state.val.toString();
+	
+	var client = new require('net').Socket();
+	client.connect(gpServerPort, gpServer, function() {
+		adapter.log.debug('Connected to ' + gpServer + ':' + gpServerPort);
+		adapter.log.debug('writing ' + message + ' to ' + gpServer + ':' + gpServerPort);
+		client.write(message);
+	});
+
+	client.on('data', function(data) {
+		adapter.log.debug('Received: ' + data);
+		callback && callback();
+	});
+		
+	client.on('error', function(error) {
+		adapter.log.error('error setting variable.' + error);
+	});
+	
+	client.on('close', function(hadError) {
+		adapter.log.debug('Connection closed');
+	});
+}
+
 function main() {
     adapter.config.reconnectTimeout = parseInt(adapter.config.reconnectTimeout, 10) || 30000;
     adapter.config.pingTimeout = parseInt(adapter.config.pingTimeout, 10) || 30000;
-    initString = new Buffer('http://' + adapter.config.bind + ':' + adapter.config.port + '/').toString('base64');
+	adapter.config.port = parseInt(adapter.config.port, 10) || 8001;
+	adapter.config.tcpPort = parseInt(adapter.config.tcpPort, 10) || 4001;
+    initString = new Buffer('http://' + adapter.config.bind + ':' + adapter.config.port + '/' + '#' + adapter.config.bind + ':' + adapter.config.tcpPort).toString('base64');
 
     adapter.getStates('*', function (err, list) {
         oldObjects = list;
         // start Web server
         startWebServer();
 
+		startTcpServer();
+		
         syncAll();
     });
 }
