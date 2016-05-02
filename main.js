@@ -142,6 +142,7 @@ function gpSubscribe(id, callback, force) {
         }
     } else {
         subscribes.push(id);
+		updateSubscribeInfo();
     }
 
     if (!inited) {
@@ -179,6 +180,8 @@ function gpUnsubscribe(id, callback) {
         return;
     }
     subscribes.splice(i, 1);
+	updateSubscribeInfo();
+	
     if (id.substring(0, adapter.namespace.length) == adapter.namespace) {
         id = id.substring(adapter.namespace.length + 1);
     }
@@ -617,19 +620,26 @@ function gpSetVar(id, state, callback) {
 	});
 }
 
+function updateSubscribeInfo(){
+	var first50 = subscribes.slice(0, 49);
+	adapter.setState('info.subscribtions', first50.join('\r\n'), true);
+}
+
 function main() {
     adapter.config.reconnectTimeout = parseInt(adapter.config.reconnectTimeout, 10) || 30000;
     adapter.config.pingTimeout = parseInt(adapter.config.pingTimeout, 10) || 30000;
 	adapter.config.port = parseInt(adapter.config.port, 10) || 8001;
 	adapter.config.tcpPort = parseInt(adapter.config.tcpPort, 10) || 4001;
     initString = new Buffer('http://' + adapter.config.bind + ':' + adapter.config.port + '/' + '#' + adapter.config.bind + ':' + adapter.config.tcpPort).toString('base64');
-
+	
     adapter.getStates('*', function (err, list) {
         oldObjects = list;
         // start Web server
         startWebServer();
 
 		startTcpServer();
+		
+		updateSubscribeInfo();
 		
         syncAll();
     });
