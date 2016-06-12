@@ -18,6 +18,7 @@ var cutLength;
 var initString;
 var gpServerPort  = null;		 
 var gpServer      = 'localhost';
+var socket        = null;
 
 adapter.on('ready', function () {
         main();
@@ -597,27 +598,52 @@ function gpSetVar(id, state, callback) {
 		adapter.log.error('gpServerPort is null');
 	}
 
-	var message = objects[id].native.group + '/' + objects[id].native.item + '/' + state.val.toString();
-	
-	var client = new require('net').Socket();
-	client.connect(gpServerPort, gpServer, function() {
-		adapter.log.debug('Connected to ' + gpServer + ':' + gpServerPort);
-		adapter.log.debug('writing ' + message + ' to ' + gpServer + ':' + gpServerPort);
-		client.write(message);
-	});
+    if (!socket){
+        var net = require('net');
+        // var socket = new net.Socket();
+        socket = net.createConnection(gpServerPort, gpServer, function(){
+            adapter.log.debug('Connected to ' + gpServer + ':' + gpServerPort);
+        });
+        socket.setKeepAlive(true);
+        socket.on('data', function(data) {
+            adapter.log.debug('Received: ' + data);
+            callback && callback();
+        });
+        socket.on('error', function (error) {
+            adapter.log.error('error setting variable.' + error);
+        });
+        socket.on('close', function () {
+            adapter.log.debug('Connection closed');
+            socket = null;
+        });
+    }
 
-	client.on('data', function(data) {
-		adapter.log.debug('Received: ' + data);
-		callback && callback();
-	});
-		
-	client.on('error', function(error) {
-		adapter.log.error('error setting variable.' + error);
-	});
-	
-	client.on('close', function(hadError) {
-		adapter.log.debug('Connection closed');
-	});
+    var message = objects[id].native.group + '/' + objects[id].native.item + '/' + state.val.toString() + '/_end_';
+    adapter.log.debug('writing ' + message + ' to ' + gpServer + ':' + gpServerPort);
+    socket.write(message);
+
+
+    // var message = objects[id].native.group + '/' + objects[id].native.item + '/' + state.val.toString();
+    //
+	// var client = new require('net').Socket();
+	// client.connect(gpServerPort, gpServer, function() {
+	// 	adapter.log.debug('Connected to ' + gpServer + ':' + gpServerPort);
+	// 	adapter.log.debug('writing ' + message + ' to ' + gpServer + ':' + gpServerPort);
+	// 	client.write(message);
+	// });
+    //
+	// client.on('data', function(data) {
+	// 	adapter.log.debug('Received: ' + data);
+	// 	callback && callback();
+	// });
+    //
+	// client.on('error', function(error) {
+	// 	adapter.log.error('error setting variable.' + error);
+	// });
+    //
+	// client.on('close', function(hadError) {
+	// 	adapter.log.debug('Connection closed');
+	// });
 }
 
 function updateSubscribeInfo(){
