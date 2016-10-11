@@ -20,6 +20,9 @@ iobroker add graphpic
 
 ## Changelog
 
+### 0.1.1  (2016-10-11)
+* (bluefox) fix localhost issue
+
 ### 0.1.0  (2016-03-09)
 * (bluefox) add quality
 

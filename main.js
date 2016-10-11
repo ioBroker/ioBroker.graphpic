@@ -56,7 +56,7 @@ process.on('SIGINT', function () {
 });
 
 function processMessage(msg) {
-    if (msg.command == 'subscribe') {
+    if (msg.command === 'subscribe') {
         if (typeof msg.message === 'object') {
             gpSubscribe(msg.message.id, function (err) {
                 adapter.sendTo(msg.from, msg.command, err, msg.callback);
@@ -66,7 +66,7 @@ function processMessage(msg) {
                 adapter.sendTo(msg.from, msg.command, err, msg.callback);
             });
         }
-    } else if (msg.command == 'unsubscribe') {
+    } else if (msg.command === 'unsubscribe') {
         if (typeof msg.message === 'object') {
             gpUnsubscribe(msg.message.id, function (err) {
                 adapter.sendTo(msg.from, msg.command, err, msg.callback);
@@ -101,7 +101,7 @@ function gpWriteVar(id, state, callback) {
     };
 
     request(options, function (error, response, body) {
-        if (error || response.statusCode != 200 || body !== '"ok"') {
+        if (error || response.statusCode !== 200 || body !== '"ok"') {
             adapter.log.error('gpWriteVar: ' + error);
             callback && callback(error || response.statusCode || body);
         } else {
@@ -115,7 +115,7 @@ function gpWriteVar(id, state, callback) {
 
 function gpRequestGroups(callback) {
     request(adapter.config.connectionLink + '/api/groups', function (error, response, body) {
-        if (!error && response.statusCode == 200) {
+        if (!error && response.statusCode === 200) {
             var data = null;
             try {
                 data = JSON.parse(body);
@@ -136,7 +136,7 @@ function gpSubscribe(id, callback, force) {
         callback = null;
     }
 
-    if (subscribes.indexOf(id) != -1)  {
+    if (subscribes.indexOf(id) !== -1)  {
         if (!force) {
             callback && callback(null);
             return;
@@ -152,7 +152,7 @@ function gpSubscribe(id, callback, force) {
         return;
     }
 
-    if (id.substring(0, adapter.namespace.length) == adapter.namespace) {
+    if (id.substring(0, adapter.namespace.length) === adapter.namespace) {
         id = id.substring(adapter.namespace.length + 1);
     }
 
@@ -165,7 +165,7 @@ function gpSubscribe(id, callback, force) {
     adapter.log.info(adapter.config.connectionLink + '/api/subscribe/' + group + '/' + parts.join('.') + '/' + initString);
 
     request(adapter.config.connectionLink + '/api/subscribe/' + group + '/' + parts.join('.') + '/' + initString, function (error, response, body) {
-        if (!error && response.statusCode == 200 && body == '"ok"') {
+        if (!error && response.statusCode === 200 && body === '"ok"') {
             callback && callback();
         } else {
             adapter.log.error('gpSubscribe: ' + (error || body));
@@ -176,14 +176,14 @@ function gpSubscribe(id, callback, force) {
 
 function gpUnsubscribe(id, callback) {
     var i = subscribes.indexOf(id);
-    if (i == -1)  {
+    if (i === -1)  {
         callback && callback(null);
         return;
     }
     subscribes.splice(i, 1);
 	updateSubscribeInfo();
 	
-    if (id.substring(0, adapter.namespace.length) == adapter.namespace) {
+    if (id.substring(0, adapter.namespace.length) === adapter.namespace) {
         id = id.substring(adapter.namespace.length + 1);
     }
     var parts = id.split('.');
@@ -192,7 +192,7 @@ function gpUnsubscribe(id, callback) {
     adapter.log.info(adapter.config.connectionLink + '/api/unsubscribe/' + group + '/' + parts.join('.') + '/' + initString);
 
     request(adapter.config.connectionLink + '/api/unsubscribe/' + group + '/' + parts.join('.') + '/' + initString, function (error, response, body) {
-        if (!error && response.statusCode == 200 && body == '"ok"') {
+        if (!error && response.statusCode === 200 && body === '"ok"') {
             callback && callback(error);
         } else {
             adapter.log.error('gpUnsubscribe: ' + error);
@@ -203,7 +203,7 @@ function gpUnsubscribe(id, callback) {
 
 function gpRequestVariables(group, callback) {
     request(adapter.config.connectionLink + '/api/groups/' + group, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
+        if (!error && response.statusCode === 200) {
             var data = null;
             try {
                 data = JSON.parse(body);
@@ -227,7 +227,7 @@ function gpSendInit(callback) {
             } else {
                 adapter.log.info('Init response OK - ' + response.statusCode + ', body: ' + body);
             }
-            if (!error && response && response.statusCode == 200){
+            if (!error && response && response.statusCode === 200){
 				response.statusCode = null;			
 				gpServerPort = Number(JSON.parse(body));
 				adapter.log.info('GP Server Port set to ' + gpServerPort);
@@ -241,7 +241,7 @@ function addToEnum(enumName, id, callback) {
     adapter.getForeignObject(enumName, function (err, obj) {
         if (!err && obj) {
             var pos = obj.common.members.indexOf(id);
-            if (pos == -1) {
+            if (pos === -1) {
                 obj.common.members.push(id);
                 adapter.setForeignObject(obj._id, obj, function (err) {
                     if (callback) callback(err);
@@ -259,7 +259,7 @@ function removeFromEnum(enumName, id, callback) {
     adapter.getForeignObject(enumName, function (err, obj) {
         if (!err && obj) {
             var pos = obj.common.members.indexOf(id);
-            if (pos != -1) {
+            if (pos !== -1) {
                 obj.common.members.splice(pos, 1);
                 adapter.setForeignObject(obj._id, obj, function (err) {
                     if (callback) callback(err);
@@ -286,8 +286,8 @@ function syncEnums(enumGroup, id, newEnumName, callback) {
     for (var e in enums[enumGroup]) {
         if (enums[enumGroup][e].common &&
             enums[enumGroup][e].common.members &&
-            enums[enumGroup][e].common.members.indexOf(id) != -1) {
-            if (enums[enumGroup][e]._id != newEnumName) {
+            enums[enumGroup][e].common.members.indexOf(id) !== -1) {
+            if (enums[enumGroup][e]._id !== newEnumName) {
                 removeFromEnum(enums[enumGroup][e]._id, id);
             } else {
                 found = true;
@@ -339,17 +339,17 @@ function startWebServer() {
             if (val === '__bad__') {
                 adapter.setState(id, { q: 0x84, ack: true });
             } else {
-                if (objects[id].native.type == 'int') {
+                if (objects[id].native.type === 'int') {
                     adapter.setState(id, { val: parseInt(val, 10), ack: true, q: parseInt(quality, 10)});
-                } else if (objects[id].native.type == 'float') {
+                } else if (objects[id].native.type === 'float') {
                     adapter.setState(id, { val: parseFloat(val), ack: true, q: parseInt(quality, 10)});
-                } else if (objects[id].native.type == 'string') {
+                } else if (objects[id].native.type === 'string') {
                     adapter.setState(id, { val: val.toString(), ack: true, q: parseInt(quality, 10)});
-                } else if (objects[id].native.type == 'bool') {
+                } else if (objects[id].native.type === 'bool') {
                     if (val === 'true') val = true;
                     if (val === 'false') val = false;
                     adapter.setState(id, { val: val, ack: true, q: parseInt(quality, 10)});
-                } else if (objects[id].native.type == 'block') {
+                } else if (objects[id].native.type === 'block') {
                     // todo check json
                     adapter.setState(id, { val: val, ack: true, q: parseInt(quality, 10)});
                 }
@@ -436,16 +436,16 @@ function syncGroup(groups, g, callback) {
                         type: items[i].type
                     }
                 };
-                if (items[i].type == 'int' || items[i].type == 'float') {
+                if (items[i].type === 'int' || items[i].type === 'float') {
                     objects[id].common.type = 'number';
                     objects[id].common.def = 0;
-                } else if (items[i].type == 'string') {
+                } else if (items[i].type === 'string') {
                     objects[id].common.type = 'string';
                     objects[id].common.def = '';
-                } else if (items[i].type == 'bool') {
+                } else if (items[i].type === 'bool') {
                     objects[id].common.type = 'boolean';
                     objects[id].common.def = false;
-                } else if (items[i].type == 'block') {
+                } else if (items[i].type === 'block') {
                     objects[id].common.type = 'array';
                     objects[id].common.def = '[]';
                 }
@@ -549,17 +549,17 @@ function startTcpServer(){
 				if (val === '__bad__') {
 					adapter.setState(id, { q: 0x84, ack: true });
 				} else {
-					if (objects[id].native.type == 'int') {
+					if (objects[id].native.type === 'int') {
 						adapter.setState(id, { val: parseInt(val, 10), ack: true, q: parseInt(quality, 10)});
-					} else if (objects[id].native.type == 'float') {
+					} else if (objects[id].native.type === 'float') {
 						adapter.setState(id, { val: parseFloat(val), ack: true, q: parseInt(quality, 10)});
-					} else if (objects[id].native.type == 'string') {
+					} else if (objects[id].native.type === 'string') {
 						adapter.setState(id, { val: val.toString(), ack: true, q: parseInt(quality, 10)});
-					} else if (objects[id].native.type == 'bool') {
+					} else if (objects[id].native.type === 'bool') {
 						if (val === 'true') val = true;
 						if (val === 'false') val = false;
 						adapter.setState(id, { val: val, ack: true, q: parseInt(quality, 10)});
-					} else if (objects[id].native.type == 'block') {
+					} else if (objects[id].native.type === 'block') {
 						// todo check json
 						adapter.setState(id, { val: val, ack: true, q: parseInt(quality, 10)});
 					}
@@ -656,6 +656,9 @@ function main() {
     adapter.config.pingTimeout = parseInt(adapter.config.pingTimeout, 10) || 30000;
 	adapter.config.port = parseInt(adapter.config.port, 10) || 8001;
 	adapter.config.tcpPort = parseInt(adapter.config.tcpPort, 10) || 4001;
+    gpServer = adapter.config.connectionLink.match(/https?:\/\/([-.\w\d]+)(:\d+)?/);
+    gpServer = gpServer[1];
+
     initString = new Buffer('http://' + adapter.config.bind + ':' + adapter.config.port + '/' + '#' + adapter.config.bind + ':' + adapter.config.tcpPort).toString('base64');
 	
     adapter.getStates('*', function (err, list) {
