@@ -1,6 +1,6 @@
 /* jshint -W097 */// jshint strict:false
 /*jslint node: true */
-"use strict";
+'use strict';
 var utils   = require(__dirname + '/lib/utils'); // Get common adapter utils
 var adapter = utils.adapter('graphpic');
 var request = require('request');
