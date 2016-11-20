@@ -20,6 +20,9 @@ iobroker add graphpic
 
 ## Changelog
 
+### 0.2.0  (2016-11-20)
+* (gh-god) batch send
+
 ### 0.1.1  (2016-10-11)
 * (bluefox) fix localhost issue
 

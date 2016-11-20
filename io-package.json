@@ -7,7 +7,7 @@
             "de": "Verbindet Gefasoft GraphPic mit ioBroker",
             "ru": "Подключает Gefasoft GraphPic к ioBroker"
         },
-        "version":                  "0.1.1",
+        "version":                  "0.2.0",
         "authors": [
             "bluefox <dogafox@gmail.com>"
         ],
@@ -32,7 +32,9 @@
         "reconnectTimeout":         30000,
         "pingTimeout":              30000,
         "subList":                  "",
-		"tcpPort":                  4001
+		"tcpPort":                  4001,
+        "batchInterval":            100,
+        "maxBatchSize":             100
     },
     "objects": [
     ],
