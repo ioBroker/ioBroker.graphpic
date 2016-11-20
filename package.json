@@ -1,6 +1,6 @@
 {
   "name": "iobroker.graphpic",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Connects Gefasoft GraphPic to ioBroker",
   "author": {
     "name": "bluefox",

@@ -23,6 +23,14 @@
         "Own TCP port":         	{"en": "Own TCP port",      	"de": "Eigener TCP Port",   	"ru": "Собственный TCP порт"},
         "Reconnect timeout":        {"en": "Reconnect timeout",     "de": "Timeout-wiederaufbau",   "ru": "Таймаут между попытками соединения"},
         "Ping timeout":             {"en": "Keep alive timeout",    "de": "Timeout-KeepAlive",      "ru": "Таймаут KeepAlive"},
+        "GraphPic adapter settings": {
+            "en": "GraphPic adapter settings",
+            "de": "GraphPic Adapter-Einstellungen",
+            "ru": "GraphPic adapter settings"
+        },
+        "Batch interval":           {"en": "Batch interval(ms)",        "de": "Batch-Intervall(ms)",        "ru": "Batch interval"},
+        "Max batch size":           {"en": "Max batch size",        "de": "Max-Batchlänge",         "ru": "Max batch size"},
+        "Listen on all IPs":        {"en": "Listen on all IPs",     "de": "Auf allen IPs",          "ru": "Listen on all IPs"},
         "Force objects re-init":    {
             "en": "Synchronize objects (once)",
             "de": "Synchronisiere Geräte neu (einmalig)",
@@ -99,7 +107,7 @@
 </head>
 <body>
 <div id="adapter-container">
-    <table><tr><td><img src="graphpic.png" width="64" height="64"></td><td><h3 class="translate">GrpahPic adapter settings</h3></td></tr></table>
+    <table><tr><td><img src="graphpic.png" width="64" height="64"></td><td><h3 class="translate">GraphPic adapter settings</h3></td></tr></table>
 
     <table style="width: 100%; height: calc(100% - 70px);">
         <tr>
@@ -124,6 +132,14 @@
         <tr>
             <td class="translate">Ping timeout</td>
             <td><input type="number" id="pingTimeout" class="value" /></td>
+        </tr>
+        <tr>
+            <td><label for="batchInterval"  class="translate">Batch interval</label></td>
+            <td><input type="number" id="batchInterval" class="value" /></td>
+        </tr>
+        <tr>
+            <td><label for="maxBatchSize"  class="translate">Max batch size</label></td>
+            <td><input type="number" id="maxBatchSize" class="value" /></td>
         </tr>
         <tr style="height: 100%;">
             <td class="translate">Subscribe list</td>
