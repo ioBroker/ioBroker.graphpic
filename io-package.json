@@ -8,6 +8,13 @@
             "ru": "Подключает Gefasoft GraphPic к ioBroker"
         },
         "version":                  "0.2.0",
+        "news": {
+            "0.2.0": {
+                "en": "Initial commit",
+                "de": "Initial commit",
+                "ru": "Initial commit"
+            }
+        },
         "authors": [
             "bluefox <dogafox@gmail.com>"
         ],
@@ -61,11 +68,11 @@
             "native": {}
         },
         {
-            "_id":  "info.subscribtions",
+            "_id":  "info.subscriptions",
             "type": "state",
             "common": {
                 "role":  "",
-                "name":  "all subscribtions",
+                "name":  "all subscriptions",
                 "type":  "string",
                 "read":  true,
                 "write": false,

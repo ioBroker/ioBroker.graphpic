@@ -711,7 +711,7 @@ function gpSetVar(id, state, callback) {
 
 function updateSubscribeInfo() {
     var first50 = subscribes.slice(0, 49);
-    adapter.setState('info.subscribtions', first50.join('\r\n'), true);
+    adapter.setState('info.subscriptions', first50.join('\r\n'), true);
 }
 
 function main() {
