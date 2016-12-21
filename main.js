@@ -575,13 +575,18 @@ function gpSendBatch() {
 function startTcpServer() {
     var s = require('net').Server(function (socket) {
 
+		var stream = '';
         socket.on('data', function (data) {
-
+			inBytes += data.length;
+			
             function processSingleItem(item) {
                 var message = item.toString();
                 console.log(message);
 
                 var parts = message.split('/');
+				if (parts.length < 3) {
+					return false;
+				}
                 var groupId = parts[0];
                 var varId = parts[1];
                 var value = parts[2];
@@ -614,17 +619,21 @@ function startTcpServer() {
                     }
                 } else {
                     if (inited) {
-                        adapter.log.warn('Unknown ID: ' + id);
+                        adapter.log.warn('Unknown ID: ' + id + ' [' + message + ']');
                         gpSendInit();
                     }
                 }
+				return true;
             }
 
-            var items = data.toString().split('|');
-
-            items.forEach(function (item) {
-                processSingleItem(item);
-            });
+			stream += data.toString();
+            var items = stream.split('|');
+			stream = '';
+			for (var i = 0; i < items.length; i++) {
+				if (!processSingleItem(items[i]) && i === items.length - 1) {
+					stream = items[i];
+				}
+			}
 
             socket.write('ok');
         });
@@ -648,6 +657,7 @@ function startTcpServer() {
 
     //setInterval(gpSendBatch, adapter.config.batchInterval);
 }
+
 
 function gpSetVar(id, state, callback) {
 
