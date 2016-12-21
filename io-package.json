@@ -79,6 +79,32 @@
                 "def":   false
             },
             "native": {}
+        },
+        {
+            "_id":  "info.inBytes",
+            "type": "state",
+            "common": {
+                "role":  "value",
+                "name":  "Input bytes per second",
+                "type":  "number",
+		    	"unit":  "B/s",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.outBytes",
+            "type": "state",
+            "common": {
+                "role":  "value",
+                "name":  "Output bytes per second",
+                "type":  "number",
+		    	"unit":  "B/s",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
         }
     ]
 }
