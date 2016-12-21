@@ -20,6 +20,10 @@ iobroker add graphpic
 
 ## Changelog
 
+### 0.2.1  (2016-12-21)
+* (bluefox) fix error with splitted packets
+* (bluefox) add in/out rates
+
 ### 0.2.0  (2016-11-20)
 * (gh-god) batch send
 
