@@ -7,8 +7,13 @@
             "de": "Verbindet Gefasoft GraphPic mit ioBroker",
             "ru": "Подключает Gefasoft GraphPic к ioBroker"
         },
-        "version":                  "0.2.0",
+        "version":                  "0.2.1",
         "news": {
+			"0.2.1": {
+                "en": "Add in/out states",
+                "de": "In/Out Rates hinzugefügt",
+                "ru": "Добавлены in/out показатели"
+            },
             "0.2.0": {
                 "en": "Initial commit",
                 "de": "Initial commit",
