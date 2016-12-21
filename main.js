@@ -307,7 +307,7 @@ function syncIoBrokerObjects() {
         delete oldObjects[id];
         id = id.substring(adapter.namespace.length + 1);
         // if object not exist in new configuration => delete it
-        if (!objects[id]) {
+        if (!objects[id] && !id.match(/^info\./)) {
             adapter.delObject(id, function (err, id) {
                 adapter.delState(id, function (err, id) {
                     if (err) {
