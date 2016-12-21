@@ -730,8 +730,8 @@ function updateSubscribeInfo() {
 function main() {
 	setInterval(function () {
 		adapter.log.info('In: ' + (Math.round(inBytes / 3) / 10) + ', out: ' + (Math.round(outBytes / 3) / 10));
-		adapter.setState('in', (Math.round(inBytes / 3) / 10), true);
-		adapter.setState('out', (Math.round(outBytes / 3) / 10), true);
+		adapter.setState('info.inBytes', (Math.round(inBytes / 3) / 10), true);
+		adapter.setState('info.outBytes', (Math.round(outBytes / 3) / 10), true);
 		inBytes = 0;
 		outBytes = 0;
 	}, 30000);
