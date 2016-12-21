@@ -19,6 +19,9 @@ var initString;
 var gpServerPort  = null;		 
 var gpServer      = 'localhost';
 var socket        = null;
+var inBytes = 0;
+var outBytes = 0;
+
 
 adapter.on('ready', function () {
         main();
@@ -236,7 +239,7 @@ function gpSendInit(callback) {
         });
 }
 
-// ------------------ Synchronise variables in ioBroker
+// ------------------ Synchronise variables in gagent
 function addToEnum(enumName, id, callback) {
     adapter.getForeignObject(enumName, function (err, obj) {
         if (!err && obj) {
@@ -356,7 +359,7 @@ function startWebServer() {
             }
         } else {
             if (inited) {
-                adapter.log.warn('Unknown ID: ' + id);
+                adapter.log.warn('_Unknown ID: ' + id);
                 gpSendInit();
             }
         }
@@ -567,6 +570,7 @@ function gpSendBatch() {
     }
     adapter.log.debug('writing ' + data + ' to ' + gpServer + ':' + gpServerPort);
     console.log('writing ' + data + ' to ' + gpServer + ':' + gpServerPort);
+	outBytes += data.length * 2;
     socket.write(data);
 
     if (gpMessages.length) setTimeout(gpSendBatch, 0);
@@ -658,7 +662,6 @@ function startTcpServer() {
     //setInterval(gpSendBatch, adapter.config.batchInterval);
 }
 
-
 function gpSetVar(id, state, callback) {
 
     // if (!gpServerPort) {
@@ -721,10 +724,17 @@ function gpSetVar(id, state, callback) {
 
 function updateSubscribeInfo() {
     var first50 = subscribes.slice(0, 49);
-    adapter.setState('info.subscriptions', first50.join('\r\n'), true);
+    adapter.setState('info.subscribtions', first50.join('\r\n'), true);
 }
 
 function main() {
+	setInterval(function () {
+		adapter.log.info('In: ' + (Math.round(inBytes / 3) / 10) + ', out: ' + (Math.round(outBytes / 3) / 10));
+		adapter.setState('in', (Math.round(inBytes / 3) / 10), true);
+		adapter.setState('out', (Math.round(outBytes / 3) / 10), true);
+		inBytes = 0;
+		outBytes = 0;
+	}, 30000);
     adapter.config.batchInterval = adapter.config.batchInterval === undefined || adapter.config.batchInterval === null ? 0: parseInt(adapter.config.batchInterval, 10) || 0;
     adapter.config.maxBatchSize = adapter.config.maxBatchSize === undefined || adapter.config.maxBatchSize === null ? 100: parseInt(adapter.config.maxBatchSize, 10) || 100;
     adapter.config.reconnectTimeout = parseInt(adapter.config.reconnectTimeout, 10) || 30000;
