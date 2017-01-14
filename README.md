@@ -20,6 +20,9 @@ iobroker add graphpic
 
 ## Changelog
 
+### 0.2.2  (2017-01-14)
+* (bluefox) Mark 0.0.0.0 as invalid
+
 ### 0.2.1  (2016-12-21)
 * (bluefox) fix error with splitted packets
 * (bluefox) add in/out rates

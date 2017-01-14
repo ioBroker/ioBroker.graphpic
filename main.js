@@ -650,7 +650,6 @@ function startTcpServer() {
             socket.end();
         });
 
-
         socket.on('error', function () {
             socket.end();
         });
