@@ -28,7 +28,7 @@
         "authors": [
             "bluefox <dogafox@gmail.com>"
         ],
-        "license":                  "MIT",
+        "license":                  "CC-BY-NC-4.0",
         "mode":                     "daemon",
         "messagebox":               true,
         "subscribe":                "messagebox",

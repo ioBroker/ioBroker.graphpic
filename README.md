@@ -1,7 +1,10 @@
 ![Logo](admin/graphpic.png)
-# Graphpic Adapter  for Gefasoft project
+# ioBroker.graphpic
+==================
 
-Connects Gefasoft with graphpic. 
+## Graphpic Adapter for Gefasoft project
+
+Connects ioBroker with graphpic. 
 
 ## Install
 ```
@@ -44,7 +47,14 @@ iobroker add graphpic
 
 ## License
 
-Copyright (c) 2016 Gefasoft AG
+Copyright (c) 2017 ioBroker. 
 
-Using without permission is prohibited.
+ioBroker.graphpic (c) by ioBroker
+
+ioBroker.graphpic is licensed under a
+Creative Commons Attribution-NonCommercial 4.0 International License.
+
+You should have received a copy of the license along with this
+work. If not, see <http://creativecommons.org/licenses/by-nc/4.0/>.
+
 
